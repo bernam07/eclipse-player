@@ -1,7 +1,7 @@
-import { app, BrowserWindow, ipcMain, protocol, net } from 'electron';
+import { app, BrowserWindow, ipcMain, protocol } from 'electron';
 import * as path from 'path';
 import * as fs from 'fs';
-import { pathToFileURL } from 'url';
+import { Readable } from 'stream';
 
 protocol.registerSchemesAsPrivileged([
   { scheme: 'local-media', privileges: { secure: true, supportFetchAPI: true, bypassCSP: true, stream: true } }
@@ -12,9 +12,9 @@ const playlistFilePath = path.join(userDataPath, 'playlist.json');
 
 function createWindow() {
   const win = new BrowserWindow({
-    width: 420,
+    width: 780,
     height: 550,
-    minWidth: 380,
+    minWidth: 700,
     minHeight: 500,
     resizable: true,
     frame: false,
@@ -44,8 +44,51 @@ app.whenReady().then(() => {
     if (process.platform === 'win32' && filePath.startsWith('/')) {
       filePath = filePath.substring(1);
     }
-    
-    return net.fetch(pathToFileURL(filePath).toString());
+
+    try {
+      const stats = fs.statSync(filePath);
+      const range = request.headers.get('range');
+      
+      const ext = path.extname(filePath).toLowerCase();
+      let mimeType = 'audio/mpeg';
+      if (ext === '.wav') mimeType = 'audio/wav';
+      else if (ext === '.ogg') mimeType = 'audio/ogg';
+      else if (ext === '.flac') mimeType = 'audio/flac';
+
+      if (range) {
+        const parts = range.replace(/bytes=/, "").split("-");
+        const start = parseInt(parts[0], 10);
+        const end = parts[1] ? parseInt(parts[1], 10) : stats.size - 1;
+        const chunksize = (end - start) + 1;
+        
+        const fileStream = fs.createReadStream(filePath, { start, end });
+        const webStream = Readable.toWeb(fileStream) as any;
+        
+        return new Response(webStream, {
+          status: 206,
+          headers: {
+            'Content-Range': `bytes ${start}-${end}/${stats.size}`,
+            'Accept-Ranges': 'bytes',
+            'Content-Length': chunksize.toString(),
+            'Content-Type': mimeType
+          }
+        });
+      } else {
+        const fileStream = fs.createReadStream(filePath);
+        const webStream = Readable.toWeb(fileStream) as any;
+        
+        return new Response(webStream, {
+          status: 200,
+          headers: {
+            'Content-Length': stats.size.toString(),
+            'Accept-Ranges': 'bytes',
+            'Content-Type': mimeType
+          }
+        });
+      }
+    } catch (error) {
+      return new Response('File not found', { status: 404 });
+    }
   });
 
   createWindow();
@@ -62,9 +105,7 @@ app.on('window-all-closed', () => {
 ipcMain.on('save-playlist', (event, playlist) => {
   try {
     fs.writeFileSync(playlistFilePath, JSON.stringify(playlist));
-  } catch (error) {
-    console.error("Erro ao guardar playlist:", error);
-  }
+  } catch (error) {}
 });
 
 ipcMain.handle('load-playlist', () => {
@@ -73,8 +114,6 @@ ipcMain.handle('load-playlist', () => {
       const data = fs.readFileSync(playlistFilePath, 'utf-8');
       return JSON.parse(data);
     }
-  } catch (error) {
-    console.error("Erro ao ler playlist:", error);
-  }
+  } catch (error) {}
   return [];
 });
