@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Eclipse Player</title>
+  <link rel="stylesheet" href="./src/style.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jsmediatags/3.9.5/jsmediatags.min.js"></script>
+</head>
+<body>
+  <div class="player-container">
+    <div class="title-bar">
+      <span class="title-text">eclipse player</span>
+      <div class="window-controls">
+        <button id="minimize-btn" class="win-btn">-</button>
+        <button id="close-btn" class="win-btn">×</button>
+      </div>
+    </div>
+
+    <div class="display-area">
+      <div class="vinyl-wrapper">
+        <div class="vinyl-arm"></div>
+        <div id="vinyl-disc" class="vinyl-disc">
+          <img id="cover-art" class="vinyl-center" src="" alt="">
+        </div>
+      </div>
+      
+      <div class="track-info">
+        <div class="marquee-container">
+          <div id="track-title" class="marquee-text">No Track Loaded</div>
+        </div>
+        <div id="track-artist" class="artist-text">Local MP3 Player</div>
+      </div>
+    </div>
+
+    <div class="progress-container" id="progress-container">
+      <div id="progress-bar" class="progress-bar"></div>
+    </div>
+
+    <div class="playlist-box" id="playlist-box">
+    </div>
+
+    <div class="controls">
+      <button id="prev-btn" class="ctrl-btn">
+        <svg viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6L18 6v12z"/></svg>
+      </button>
+      <button id="play-btn" class="ctrl-btn play-main">
+        <svg id="play-icon" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+      </button>
+      <button id="next-btn" class="ctrl-btn">
+        <svg viewBox="0 0 24 24"><path d="M6 18V6l8.5 6zm9-12h2v12h-2z"/></svg>
+      </button>
+    </div>
+
+    <div class="footer-actions" style="gap: 10px;">
+      <label for="file-upload" class="action-btn" style="-webkit-app-region: no-drag; display: inline-block;">Files</label>
+      <input type="file" id="file-upload" accept=".mp3, audio/*" multiple style="display: none;" />
+
+      <label for="folder-upload" class="action-btn" style="-webkit-app-region: no-drag; display: inline-block;">Folder</label>
+      <input type="file" id="folder-upload" webkitdirectory directory style="display: none;" />
+    </div>
+
+  <audio id="audio-engine"></audio>
+  <script type="module" src="./src/renderer.ts"></script>
+</body>
+</html>
