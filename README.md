@@ -28,7 +28,7 @@ A minimalist and elegant local music player built with Electron. Features a side
 
 ## How to Run the Project
 
-git clone https://github.com/your-username/eclipse-player.git
+git clone https://github.com/bernam07/eclipse-player.git
 cd eclipse-player
 
 npm install
