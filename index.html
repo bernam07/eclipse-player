@@ -10,7 +10,16 @@
 <body>
   <div class="player-container">
     <div class="title-bar">
-      <span class="title-text">eclipse player</span>
+      <div style="display: flex; align-items: center;">
+        <span class="title-text">eclipse player</span>
+        <div class="import-dropdown" style="-webkit-app-region: no-drag;">
+          <button class="import-btn">Importar ▾</button>
+          <div class="import-content">
+            <label for="file-upload">Ficheiros</label>
+            <label for="folder-upload">Pasta Local</label>
+          </div>
+        </div>
+      </div>
       <div class="window-controls" style="-webkit-app-region: no-drag;">
         <button id="minimize-btn" class="win-btn">-</button>
         <button id="close-btn" class="win-btn">×</button>
@@ -31,39 +40,45 @@
           </div>
           <div class="artist-text" id="track-artist">Local MP3 Player</div>
         </div>
+        <canvas id="visualizer" class="visualizer" width="240" height="40"></canvas>
       </div>
-      <div class="controls">
-        <button id="shuffle-btn" class="ctrl-btn" style="width: 30px; height: 30px;">
-          <svg viewBox="0 0 24 24"><path d="M10.59 9.17L5.41 4 4 5.41l5.17 5.17 1.42-1.41zM14.5 4l2.04 2.04L4 18.59 5.41 20 17.96 7.46 20 9.5V4h-5.5zm.33 9.41l-1.41 1.41 3.13 3.13L14.5 20H20v-5.5l-2.04 2.04-3.13-3.13z"/></svg>
-        </button>
-        <button id="prev-btn" class="ctrl-btn">
-          <svg viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6L18 6v12z"/></svg>
-        </button>
-        <button id="play-btn" class="ctrl-btn play-main">
-          <svg id="play-icon" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-        </button>
-        <button id="next-btn" class="ctrl-btn">
-          <svg viewBox="0 0 24 24"><path d="M6 18V6l8.5 6zm9-12h2v12h-2z"/></svg>
-        </button>
+      
+      <div style="display: flex; flex-direction: column; gap: 15px; width: 100%;">
+        <div class="progress-container" id="progress-container">
+          <div id="progress-bar" class="progress-bar"></div>
+        </div>
+
+        <div class="controls">
+          <button id="shuffle-btn" class="ctrl-btn" style="width: 30px; height: 30px;">
+            <svg viewBox="0 0 24 24"><path d="M10.59 9.17L5.41 4 4 5.41l5.17 5.17 1.42-1.41zM14.5 4l2.04 2.04L4 18.59 5.41 20 17.96 7.46 20 9.5V4h-5.5zm.33 9.41l-1.41 1.41 3.13 3.13L14.5 20H20v-5.5l-2.04 2.04-3.13-3.13z"/></svg>
+          </button>
+          <button id="lyrics-btn" class="ctrl-btn" style="width: 30px; height: 30px;">
+            <svg viewBox="0 0 24 24"><path d="M14 17H4v2h10v-2zm6-8H4v2h16V9zM4 15h16v-2H4v2zM4 5v2h16V5H4z"/></svg>
+          </button>
+          <button id="prev-btn" class="ctrl-btn"><svg viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6L18 6v12z"/></svg></button>
+          <button id="play-btn" class="ctrl-btn play-main"><svg id="play-icon" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></button>
+          <button id="next-btn" class="ctrl-btn"><svg viewBox="0 0 24 24"><path d="M6 18V6l8.5 6zm9-12h2v12h-2z"/></svg></button>
+        </div>
+        
+        <div class="volume-container">
+          <svg viewBox="0 0 24 24" width="16" fill="#7aa2f7"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+          <input type="range" id="volume-slider" class="volume-slider" min="0" max="1" step="0.01" value="1" />
+        </div>
       </div>
     </div>
 
     <div class="right-panel">
-      <div class="progress-container" id="progress-container">
-        <div id="progress-bar" class="progress-bar"></div>
-      </div>
       <div class="playlist-header">
         <select id="playlist-selector" class="playlist-select"></select>
         <button id="rename-playlist-btn" class="icon-btn">✎</button>
         <button id="new-playlist-btn" class="icon-btn">+</button>
         <button id="clear-playlist-btn" class="icon-btn">🗑</button>
       </div>
+      
       <div class="playlist-box" id="playlist-box"></div>
-      <div class="footer-actions" style="gap: 5px; margin-top: 10px;">
-        <label for="file-upload" class="action-btn">Files</label>
-        <input type="file" id="file-upload" accept=".mp3, audio/*" multiple style="display: none;" />
-        <label for="folder-upload" class="action-btn">Folder</label>
-        <input type="file" id="folder-upload" webkitdirectory directory style="display: none;" />
+      
+      <div class="lyrics-box" id="lyrics-box" style="display: none;">
+        <div id="lyrics-text">Sem letras disponíveis.</div>
       </div>
     </div>
 
@@ -79,7 +94,10 @@
     </div>
   </div>
 
-  <audio id="audio-engine"></audio>
+  <input type="file" id="file-upload" accept=".mp3, audio/*" multiple style="display: none;" />
+  <input type="file" id="folder-upload" webkitdirectory directory style="display: none;" />
+  
+  <audio id="audio-engine" crossorigin="anonymous"></audio>
   <script type="module" src="./src/renderer.ts"></script>
 </body>
 </html>

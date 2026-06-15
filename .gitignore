@@ -1,6 +1,8 @@
 node_modules/
 dist/
+dist-electron/
 .DS_Store
 *.p8
 generate-token.js
 .env
+release/
